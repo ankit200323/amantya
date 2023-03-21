@@ -1,0 +1,32 @@
+#!/bin/bash
+pwd
+sudo su - << EOF
+
+pwd
+cd /var/lib/docker/containers/
+pwd
+
+var1=\$(sudo docker ps --no-trunc | grep prodbackend | awk '{print \$1}')
+echo \$var1
+cd "\$var1"
+pwd
+var2=\$var1-json.log
+echo \$var2
+cat /dev/null > \$var2
+
+du -sh \$(docker inspect --format='{{.LogPath}}' \$var1)
+EOF
+
+
+
+String s1="Ram";
+s1=null
+
+("Ram".qua(s1))
+(s1.euq("Ram"))
+
+Emp e1= new Emp("ram",10, 30000);
+Emp e2= new Emp("ram",10, 30000);
+
+hashmap.put(e1, "Ajit");
+hashmap.put(e2, "Amit");

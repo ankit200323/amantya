@@ -1,0 +1,23 @@
+#!/bin/bash
+
+
+sudo su - << EOF
+cd
+git clone -b main https://github.com/5GRealityLab/do_dashboard_ui.git
+
+    cd "do_dashboard_ui/vrsu-subscriber-manager"
+        kubectl delete -f backend-deployment.yaml
+
+        echo "Installing vrsufrontend node."
+        kubectl apply -f backend-deployment.yaml
+
+        cd
+
+
+        cd "do_dashboard_ui/hum-verizon-ui"
+        kubectl delete -f k8s_deployment
+
+        echo "Installing vrsubackend node."
+        kubectl apply -f k8s_deployment
+
+EOF

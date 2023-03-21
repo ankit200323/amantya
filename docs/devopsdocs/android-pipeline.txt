@@ -1,0 +1,35 @@
+pipeline {
+    
+    agent any
+    
+    tools {
+        gradle 'gradle'
+        }
+        
+    stages {
+        
+        stage('Source Code From Github For Android') {
+            steps {
+                script {
+                    git branch: 'Unit_Test_Cases', credentialsId: "Android" , url: "https://github.com/mohanvimin/adop_Android_App.git"
+                }
+            }
+        }
+        
+        stage("Test Cases Of Android"){
+            steps{
+                dir("app"){
+                    sh "gradle test"
+                }
+            }
+        }
+        
+        stage('Test & Jacoco Static Analysis') {
+            steps {
+                script {
+                    jacoco exclusionPattern: '**/j2735/**,**/androidx/**,**/org/**,**/info/**,**/com/verizon/cv2xapp/binding/**,/com/verizon/cv2xapp/generated/**,**/com/verizon/cv2xapp/databinding/**,**/com/verizon/cv2xapp/protobuf/**,**/com/verizon/cv2xapp/ui/**,**/com/verizon/cv2xapp/services/**', sourceInclusionPattern: '**/*.java,**/*.kt'
+            }
+        }
+    }
+    }
+}
