@@ -1,0 +1,11 @@
+<div class="d-flex justify-content-between" style="border-bottom: 1px solid #ccc;">
+    <h1 mat-dialog-title>Logout</h1>
+    <button type="button" class="btn-close" (click)="this.dialogRef.close(false)"></button>
+</div>
+<div class="my-3 pb-2" style="border-bottom: 1px solid #ccc;">
+  Do you really want to logout?
+</div>
+<div mat-dialog-actions class="justify-content-end">
+  <button mat-button mat-dialog-close class="cancel-btn" (click)="this.dialogRef.close(false)">Cancel</button>
+  <button mat-button mat-dialog-close class="btn-color" cdkFocusInitial (click)="this.dialogRef.close(true)">Yes</button>
+</div>

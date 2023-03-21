@@ -1,0 +1,78 @@
+/* You can add global styles to this file, and also import other style files */
+@import "~@angular/material/prebuilt-themes/indigo-pink.css";
+@font-face {
+    font-family: 'Neue Haas Grotesk Text Std';
+    src: url(./assets/fonts/nhaasgrotesktxstd_55rg.otf);
+  }
+  
+  @font-face {
+    font-family: 'Neue Haas Grotesk Text Std bold';
+    src: url(./assets/fonts/nhaasgrotesktxstd_65md.otf);
+  }
+
+  $font-stack: 'Neue Haas Grotesk Text Std';
+
+  $neue-bold: 'Neue Haas Grotesk Text Std bold';
+
+  *{
+    font-family: $font-stack;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    overflow: hidden; /* Hide scrollbars */
+  }
+
+.mt10{
+    margin-top: 10px !important;
+}
+
+.mt15{
+    margin-top: 15px;
+}
+
+.mt20{
+    margin-top: 20px;
+}
+
+.mt50{
+    margin-top: 50px;
+}
+
+.p0{
+  padding: 0px !important;
+}
+
+.ml20{
+  margin-left: 20px;
+}
+
+.red-snackbar{
+  background-color: #DA4144;
+  color: #ffffff;
+  font-weight: 700;
+  opacity: 0.8 !important;
+  min-width: 190px !important;
+}
+
+.mat-simple-snack-bar-content{
+  font-size: 18px;
+}
+
+.green-snackbar{
+  background-color: #4BB543;
+  color: #ffffff;
+  font-weight: 700;
+  opacity: 0.9 !important;
+  min-width: 190px !important;
+}
+.btn-color{
+  background-color: #000;
+  color: #fff;
+} 
+.cancel-btn{
+  background-color: #999;
+  color: #fff;
+}

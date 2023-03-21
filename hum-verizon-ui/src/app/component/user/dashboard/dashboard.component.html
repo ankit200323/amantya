@@ -1,0 +1,620 @@
+<app-header></app-header>
+<div *ngIf="!rightPanelDataObj.isDetailViewEnabled && !rightPanelDataObj.isProccessedDataEnabled">
+  <form class="map-form-light">
+    <div class="row">
+      <div *ngIf="mapDataObj.hideShowMap"
+        [ngClass]="rightPanelDataObj.isRightPanelOpen ? 'col-lg-9 map-view mapFullScreen' : 'map-view'">
+        <div id="fullscreenMode" class="drag-icon drag-mode-change"
+          [style.display]="rightPanelDataObj.isMapVisible ? '' : 'none'">
+          <div class="row">
+            <div class="col-6 mapImg"><img alt="map_roadmap" src="../../assets/map_roadmap.jpg"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('OSM Roadmap')">
+              <p>OSM Roadmap</p>
+            </div>
+            <div class="col-6 mapImg"><img alt="osm_map_roadmap"
+                src="https://doc.arcgis.com/en/data-appliance/7.2/maps/GUID-BBDE7FFC-3B4D-4CCC-8117-20F8102CA192-web.jpg"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('OSM satellite')">
+              <p>OSM satellite</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mapImg"><img alt="map_roadmap" src="../../assets/map_roadmap.jpg"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('OSM Street')">
+              <p>OSM Street</p>
+            </div>
+            <div class="col-6 mapImg"><img alt="map_satellite"
+                src="https://doc.arcgis.com/en/data-appliance/7.2/maps/GUID-4AADA93A-768B-4DA9-8999-E28A87619C8E-web.jpg"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('OSM Topographic')">
+              <p>OSM Topographic</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mapImg"><img alt="map_satellite" src="../../assets/map_satellite.jpg"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('Google Hybrid')">
+              <p>Google Hybrid</p>
+            </div>
+            <div class="col-6 mapImg"><img alt="map_roadmap"
+                src="https://maps.gstatic.com/tactile/layerswitcher/ic_satellite-1x.png"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('Google satellite')">
+              <p>Google satellite</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-6 mapImg"><img alt="map_roadmap" src="../../assets/topographic.jpg"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('Google Roadmap')">
+              <p>Google Roadmap</p>
+            </div>
+            <div class="col-6 mapImg"><img alt="map_roadmap"
+                src="https://maps.gstatic.com/tactile/layerswitcher/ic_terrain-1x.png"
+                style="height: 50px;width:50px;border-radius: 10px;" (click)="changeMapMode('Google Terrain')">
+              <p>Google Terrain</p>
+            </div>
+          </div>
+
+        </div>
+        <span [ngClass]="!rightPanelDataObj.isRightPanelOpen? 'details-view': 'hide'" id="detailView"
+          (click)="enableDetailedView()"><img alt="mode" src="../../assets/details-view.svg"><span>Detailed
+            View</span></span>
+        <span [ngClass]="!rightPanelDataObj.isRightPanelOpen? 'proccess-data-view': 'hide'" id="dataVault"
+          (click)="enableDProccessedDataView()"><img alt="mode"
+            src="../../assets/details-view.svg"><span>DataVault</span></span>
+        <span [ngClass]="!rightPanelDataObj.getDetailInfo? 'get-info': 'hide'" id="getInfo"
+          (click)="openRightPanel('vehicle');rightPanelDataObj.getDetailInfo = !rightPanelDataObj.getDetailInfo"><img
+            alt="mode" src="../../assets/get-info.svg"><span>Get Info</span></span>
+        <span id="mode" (click)="showHideMapMode()" class="drag-icon drag-mode">
+          <button><img alt="mode"
+              src="https://fonts.gstatic.com/s/i/googlematerialicons/layers/v9/white-18dp/1x/gm_layers_white_18dp.png"></button></span>
+        <aol-map [width]="'100%'" [height]="'92vh'">
+          <aol-interaction-default></aol-interaction-default>
+          <aol-control-zoom></aol-control-zoom>
+          <aol-control-fullscreen></aol-control-fullscreen>
+          <aol-control-scaleline></aol-control-scaleline>
+          <aol-view [zoom]="mapDataObj.zoom">
+            <aol-coordinate [x]="mapDataObj.longitude" [y]="mapDataObj.latitude" [srid]="'EPSG:4326'"></aol-coordinate>
+          </aol-view>
+          <aol-layer-tile [opacity]="mapDataObj.opacity">
+            <aol-source-osm *ngIf="mapDataObj.mapMode == 'OSM Roadmap'"></aol-source-osm>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'Google Hybrid'"
+              [url]="'http://mt0.google.com/vt/lyrs=y&hl=en&x={x}&y={y}&z={z}'">
+            </aol-source-xyz>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'Google satellite'"
+              [url]="'http://mt0.google.com/vt/lyrs=s&hl=en&x={x}&y={y}&z={z}'">
+            </aol-source-xyz>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'Google Terrain'"
+              [url]="'http://mt0.google.com/vt/lyrs=p&hl=en&x={x}&y={y}&z={z}'">
+            </aol-source-xyz>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'OSM Topographic'"
+              [url]="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'"
+              [maxZoom]="17">
+            </aol-source-xyz>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'Google Roadmap'"
+              [url]="'http://mt0.google.com/vt/lyrs=m&hl=en&x={x}&y={y}&z={z}'">
+            </aol-source-xyz>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'OSM satellite'"
+              [url]="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'"
+              [maxZoom]="18">
+            </aol-source-xyz>
+            <aol-source-xyz *ngIf="mapDataObj.mapMode == 'OSM Street'"
+              [url]="'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'"
+              [maxZoom]="17">
+            </aol-source-xyz>
+          </aol-layer-tile>
+          <aol-layer-vector [opacity]="mapDataObj.opacity">
+            <aol-source-vector>
+              <aol-feature>
+                <aol-geometry-point>
+                  <aol-coordinate [x]="staticVehicleCircleArr.lng" [y]="staticVehicleCircleArr.lat"
+                    [srid]="'EPSG:4326'"></aol-coordinate>
+                </aol-geometry-point>
+                <aol-style>
+                  <aol-style-circle [radius]="10">
+                    <aol-style-fill [color]="staticVehicleCircleArr.color"></aol-style-fill>
+                  </aol-style-circle>
+                </aol-style>
+              </aol-feature>
+              <aol-feature *ngFor="let location of staticAllData | keyvalue;trackBy:trackByMarker; let i=index">
+                <ng-container *ngIf="rightPanelDataObj.listVal == 0 && rightPanelDataObj.tabType == 'vehicle'">
+                  <aol-geometry-point>
+                    <aol-coordinate [x]="location.value.long" [y]="location.value.lat"
+                      [srid]="'EPSG:4326'"></aol-coordinate>
+                  </aol-geometry-point>
+                  <aol-style>
+                    <aol-style-icon [src]="location.value.icon" [anchorYUnits]="'fraction'" [scale]="1"
+                      [anchorOrigin]="'top-left'" [anchor]="[0.5, 1]" [anchorXUnits]="'fraction'">
+                    </aol-style-icon>
+                  </aol-style>
+                </ng-container>
+
+                <ng-container
+                  *ngIf="rightPanelDataObj.listVal == 1  && location.value.type == 'BSM' && rightPanelDataObj.tabType == 'vehicle'">
+                  <aol-geometry-point>
+                    <aol-coordinate [x]="location.value.long" [y]="location.value.lat"
+                      [srid]="'EPSG:4326'"></aol-coordinate>
+                  </aol-geometry-point>
+                  <aol-style>
+                    <aol-style-icon [anchorYUnits]="'fraction'" [scale]="1" [src]="location.value.icon"
+                      [anchor]="[0.5, 1]" [anchorXUnits]="'fraction'" [anchorOrigin]="'top-left'">
+                    </aol-style-icon>
+                  </aol-style>
+                </ng-container>
+
+                <ng-container
+                  *ngIf="rightPanelDataObj.listVal == 2  && location.value.type == 'EVA' && rightPanelDataObj.tabType == 'vehicle'">
+                  <aol-geometry-point>
+                    <aol-coordinate [srid]="'EPSG:4326'" [x]="location.value.long"
+                      [y]="location.value.lat"></aol-coordinate>
+                  </aol-geometry-point>
+                  <aol-style>
+                    <aol-style-icon [anchorXUnits]="'fraction'" [anchorYUnits]="'fraction'" [scale]="1"
+                      [anchorOrigin]="'top-left'" [src]="location.value.icon" [anchor]="[0.5, 1]">
+                    </aol-style-icon>
+                  </aol-style>
+                </ng-container>
+
+                <ng-container
+                  *ngIf="rightPanelDataObj.listVal == 3 && location.value.type == 'PSM' && rightPanelDataObj.tabType == 'vehicle'">
+                  <aol-geometry-point>
+                    <aol-coordinate [srid]="'EPSG:4326'" [x]="location.value.long"
+                      [y]="location.value.lat"></aol-coordinate>
+                  </aol-geometry-point>
+                  <aol-style>
+                    <aol-style-icon [src]="location.value.icon" [anchorXUnits]="'fraction'" [anchor]="[0.5, 1]"
+                      [anchorYUnits]="'fraction'" [scale]="1" [anchorOrigin]="'top-left'">
+                    </aol-style-icon>
+                  </aol-style>
+                </ng-container>
+
+              </aol-feature>
+
+              <aol-feature *ngFor="let location of staticSpatDataMarker | keyvalue;trackBy:trackByMarker; let i=index">
+                <ng-container *ngIf="rightPanelDataObj.tabType == 'details'">
+                  <aol-geometry-point>
+                    <aol-coordinate [y]="location.value.lat" [x]="location.value.long"
+                      [srid]="'EPSG:4326'"></aol-coordinate>
+                  </aol-geometry-point>
+                  <aol-style>
+                    <aol-style-icon [anchorYUnits]="'fraction'" [scale]="1.3" [anchorOrigin]="'top-left'"
+                      [src]="location.value.icon" [anchor]="[0.5, 1]" [anchorXUnits]="'fraction'">
+                    </aol-style-icon>
+                  </aol-style>
+                </ng-container>
+              </aol-feature>
+            </aol-source-vector>
+          </aol-layer-vector>
+          <aol-control>
+            <aol-content>
+              <div class="ol-overlaycontainer-stopevent">
+                <div class="ol-attribution ol-unselectable ol-control ol-uncollapsible">
+                  <ul>
+                    <li>© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a></li>
+                  </ul>
+                </div>
+              </div>
+            </aol-content>
+          </aol-control>
+        </aol-map>
+      </div>
+      <div class="col-lg-3 map-details" *ngIf="rightPanelDataObj.isRightPanelOpen">
+        <div class="container-pad">
+
+          <div class="row mb-2 user-info">
+            <div class="col-lg-6"><img alt="mode" src="../../assets/forward-arrow.svg"
+                (click)="rightPanelDataObj.getDetailInfo = !rightPanelDataObj.getDetailInfo; openRightPanel('vehicle')"
+                style="cursor: pointer;"><span style="margin-left: 10px">Information</span></div>
+          </div>
+
+          <div class="row">
+            <div class="searchBox col-lg-6">
+              <input [(ngModel)]="rightPanelDataObj.searchTerm" name="search" type="search"
+                style="background-color: #ffffff; border: none" class="form-control rounded input-group-text"
+                placeholder="Search ID" aria-label="Search" aria-describedby="search-addon" />
+              <span class="searchIcon">
+                <img alt="ic_search" src="../../assets/search_icon.svg">
+              </span>
+            </div>
+
+            <div class="col-5 signal-card" (click)="changeTab()">
+              <img alt="ic_search"
+                [src]="rightPanelDataObj.tabType == 'vehicle' ? '../../assets/signal.svg': '../../assets/vehicle_group_icon.svg'">
+              <span style="margin-left: 10px;">{{rightPanelDataObj.tabType =='vehicle' ? 'Signal Locator': 'User
+                Information'}}</span>
+            </div>
+
+            <div *ngIf="rightPanelDataObj.tabType == 'vehicle'">
+              <div class="row justify-content-space-between right-spat-card" style="font-size: 14px;align-items: center;border-bottom: 1px solid #E2E2E2;height: 90px;
+              cursor: pointer;" (click)="onVehicleChange(0)"
+                *ngIf="rightPanelDataObj.listVal == 0 || rightPanelDataObj.listVal == -1">
+                <ng-template
+                  *ngTemplateOutlet="vehicleCardRef; context: {$implicit: rightPanelDataObj.listVal, url: '../../assets/all.svg', cardLabel: 'All Information'}"></ng-template>
+              </div>
+              <div class="row justify-content-space-between right-spat-card" style="font-size: 14px;align-items: center;border-bottom: 1px solid #E2E2E2;height: 90px;
+                cursor: pointer;" (click)="onVehicleChange(1)"
+                *ngIf="rightPanelDataObj.listVal == 1 || rightPanelDataObj.listVal == -1">
+                <ng-template
+                  *ngTemplateOutlet="vehicleCardRef; context: {$implicit: rightPanelDataObj.listVal, url: '../../assets/general.svg', cardLabel: 'General Vehicle'}"></ng-template>
+              </div>
+              <div class="row justify-content-space-between right-spat-card" style="font-size: 14px;align-items: center;border-bottom: 1px solid #E2E2E2;height: 90px;
+                cursor: pointer;" (click)="onVehicleChange(3)"
+                *ngIf="rightPanelDataObj.listVal == 3 || rightPanelDataObj.listVal == -1">
+                <ng-template
+                  *ngTemplateOutlet="vehicleCardRef; context: {$implicit: rightPanelDataObj.listVal, url: '../../assets/Pedestrian_card.svg', cardLabel: 'Pedestrian'}"></ng-template>
+              </div>
+              <div class="row justify-content-space-between right-spat-card" style="font-size: 14px;align-items: center;border-bottom: 1px solid #E2E2E2;height: 90px;
+                cursor: pointer;" (click)="onVehicleChange(2)"
+                *ngIf="rightPanelDataObj.listVal == 2 || rightPanelDataObj.listVal == -1">
+                <ng-template
+                  *ngTemplateOutlet="vehicleCardRef; context: {$implicit: rightPanelDataObj.listVal, url: '../../assets/emergen.svg', cardLabel: 'Emergency Vehicle'}"></ng-template>
+              </div>
+            </div>
+
+            <div *ngIf="rightPanelDataObj.tabType == 'details'">
+              <div class="row justify-content-space-between right-spat-card" style="font-size: 14px;align-items: center;border-bottom: 1px solid #E2E2E2;height: 90px;
+              cursor: pointer;">
+                <div class="col-lg-4" style="text-align: right"><img alt="ic_search1" src="../../assets/signal.svg"
+                    style="height: 57px;width: 57px;">
+                </div>
+                <div class="col-lg-8">Signal Phase & Location
+                  <span *ngIf="rightPanelDataObj.listVal != -1" style="float: right;margin-right: 15px;"><img
+                      alt="ic_search1" src="../../assets/Close-icon.png" style="height: 20px"></span>
+                </div>
+              </div>
+            </div>
+
+            <div *ngIf="rightPanelDataObj.tabType == 'details'" style="height: 55vh; overflow: auto;">
+              <mat-accordion class="example-headers-align" style="margin: 10px 20px 0px 0px;">
+                <mat-expansion-panel [disabled]="true" [(expanded)]="location.value.isOpen"
+                  *ngFor="let location of staticSpatDataMarker | keyvalue | filter : rightPanelDataObj.searchTerm;trackBy:trackBy; let i= index"
+                  hideToggle="true">
+                  <mat-expansion-panel-header style="height: 35px;">
+                    <mat-panel-title>
+                      <input #car type="checkbox" name="checkSpat{{i}}" [checked]="location.value.isOpen"
+                        (change)="selectSpatLocationCar(i, car.checked, location.value)"
+                        [value]="location.value.id">
+                      <span style="margin-left: 10px;color: black; white-space: nowrap;
+                      width: 190px; font-size: 12px;
+                      text-overflow: ellipsis;
+                      overflow: hidden;">{{location.value.name}}</span>
+                    </mat-panel-title>
+                    <div class="row">
+                      <div class="col-lg-1">
+                        <img alt="ic_search3" src="../../assets/signal.svg">
+                      </div>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <div class="modal-body">
+                    <form class="form-inline" [formGroup]="spatDetailForm" style="padding: 5px 10px 0 10px;">
+                      <div class="row">
+                        <div class="col-lg-6 col-6 d-flex justify-content-center">
+                          <div
+                            style="border-radius: 10px;width: 40px;border: 1px solid gray;background: rgba(0, 0, 0, 0.07)">
+                            <div class="row justify-content-center" style="padding:2px">
+                              <div
+                                [ngClass]="this.spatDetailForm.controls['type'].value == 1 ? 'redSignal': 'fadedRedSignal'">
+                              </div>
+                            </div>
+                            <div class="row justify-content-center" style="padding:2px">
+                              <div
+                                [ngClass]="this.spatDetailForm.controls['type'].value == 2 ? 'yellowSignal': 'fadedYellowSignal'">
+                              </div>
+                            </div>
+                            <div class="row justify-content-center" style="padding:2px">
+                              <div
+                                [ngClass]="this.spatDetailForm.controls['type'].value == 3 ? 'greenSignal': 'fadedGreenSignal'">
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="col-lg-6 col-6">
+                          <div class="form-group">
+                            <label for="mqtt">Place</label>
+                            <div class="infoLabel">{{this.spatDetailForm.controls['name'].value}}</div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </form>
+                  </div>
+                </mat-expansion-panel>
+              </mat-accordion>
+            </div>
+
+          </div>
+
+          <div *ngIf="rightPanelDataObj.listVal != -1 && rightPanelDataObj.tabType != 'details'"
+            style="height: 55vh; overflow: auto;">
+            <mat-accordion class="example-headers-align" style="margin: 10px 20px 0px 0px;">
+              <ng-container
+                *ngFor="let location of staticAllData | keyvalue | filter : rightPanelDataObj.searchTerm;trackBy:trackBy; let i= index">
+                <mat-expansion-panel [(expanded)]="location.value.isOpen" [disabled]="true" *ngIf="rightPanelDataObj.listVal == 0"
+                  hideToggle="true">
+                  <mat-expansion-panel-header style="height: 35px;" class="allVehicle">
+                    <mat-panel-title>
+                      <input #car type="checkbox" name="check{{i}}" [value]="location.value.id"
+                        (change)="selectLocationCar(i, car.checked, location.value);"
+                        [checked]="location.value.isOpen">
+                      <span style="margin-left: 10px;color: black;">{{location.value.id}}</span>
+                    </mat-panel-title>
+                    <div class="row">
+                      <div class="col-lg-1">
+                        <img alt="ic_search0" src="{{location.value.iconurl}}">
+                      </div>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <ng-template *ngTemplateOutlet="locationRef; context: {$implicit: location}"></ng-template>
+                </mat-expansion-panel>
+
+                <mat-expansion-panel [disabled]="true" [(expanded)]="location.value.isOpen"
+                  *ngIf="rightPanelDataObj.listVal == 1 && location.value.type == 'BSM'" hideToggle="true">
+                  <mat-expansion-panel-header style="height: 35px;" class="bsm">
+                    <mat-panel-title>
+                      <input #car type="checkbox" name="check{{i}}" [value]="location.value.id"
+                        [checked]="location.value.isOpen"
+                        (change)="selectLocationCar(i, car.checked, location.value)">
+                      <span style="margin-left: 10px;color: black;">{{location.value.id}}</span>
+                    </mat-panel-title>
+                    <div class="row">
+                      <div class="col-lg-1">
+                        <img alt="ic_search1" src="{{location.value.iconurl}}">
+                      </div>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <ng-template *ngTemplateOutlet="locationRef; context: {$implicit: location}"></ng-template>
+                </mat-expansion-panel>
+
+                <mat-expansion-panel [disabled]="true" [(expanded)]="location.value.isOpen"
+                  *ngIf="rightPanelDataObj.listVal == 3 && location.value.type == 'PSM'" hideToggle="true">
+                  <mat-expansion-panel-header style="height: 35px;" class="psm">
+                    <mat-panel-title>
+                      <input #car [value]="location.value.id" type="checkbox" name="check{{i}}"
+                        [checked]="location.value.isOpen"
+                        (change)="selectLocationCar(i, car.checked, location.value)">
+                      <span style="margin-left: 10px;color: black;">{{location.value.id}}</span>
+                    </mat-panel-title>
+                    <div class="row">
+                      <div class="col-lg-1">
+                        <img alt="ic_search2" src="{{location.value.iconurl}}">
+                      </div>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <ng-template *ngTemplateOutlet="locationRef; context: {$implicit: location}"></ng-template>
+                </mat-expansion-panel>
+
+                <mat-expansion-panel [disabled]="true" [(expanded)]="location.value.isOpen"
+                  *ngIf="rightPanelDataObj.listVal == 2 && location.value.type == 'EVA'" hideToggle="true">
+                  <mat-expansion-panel-header style="height: 35px;" class="eva">
+                    <mat-panel-title>
+                      <input #car type="checkbox" [value]="location.value.id" name="check{{i}}"
+                        [checked]="location.value.isOpen"
+                        (change)="selectLocationCar(i, car.checked, location.value)">
+                      <span style="margin-left: 10px;color: black;">{{location.value.id}}</span>
+                    </mat-panel-title>
+                    <div class="row">
+                      <div class="col-lg-1">
+                        <img alt="ic_search3" src="{{location.value.iconurl}}">
+                      </div>
+                    </div>
+                  </mat-expansion-panel-header>
+                  <ng-template *ngTemplateOutlet="locationRef; context: {$implicit: location}"></ng-template>
+                </mat-expansion-panel>
+              </ng-container>
+
+            </mat-accordion>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+<div *ngIf="rightPanelDataObj.isDetailViewEnabled" style="margin-top:5%;">
+  <div class="lower-header" style="position: relative;">
+    <div class="map-view-icon d-flex justify-content-end py-1 px-2"
+      style="position: absolute; right: 0;
+    border-top-left-radius: 15px; border-bottom-left-radius: 15px; padding-left: 10px; box-shadow: 0px 8px 4px 0px rgba(0, 0, 0, 0.32);cursor: pointer;"
+      (click)="rightPanelDataObj.isDetailViewEnabled = !rightPanelDataObj.isDetailViewEnabled">
+      <img alt="mapview" src="../assets/map-view-icon.svg">
+      <span class="px-2 view-map" style="font-size: 12px; font-weight: 400;">Map View</span>
+    </div>
+    <div class="d-flex px-5 mx-3 mt-4">
+      <h5 style="font-size: 18px; font-weight: 500;">Overview</h5>
+    </div>
+  </div>
+  <div class="main-box px-5" style="background-color: #ccc;height: 100vh;">
+    <div class="row pt-4">
+      <div class="col-lg-4 col-md-4 col-sm-4 col-4">
+        <div class="row" style="height: 100%;">
+
+          <ng-template
+            *ngTemplateOutlet="detailCardRef; context: {$implicit: staticDataCount.vehicle, label: 'Total General Vehicles'}"></ng-template>
+          <ng-template
+            *ngTemplateOutlet="detailCardRef; context: {$implicit: staticDataCount.pedestrian, label: 'Total Pedestrians'}"></ng-template>
+          <ng-template
+            *ngTemplateOutlet="detailCardRef; context: {$implicit: staticDataCount.emergency, label: 'Total Emergency Vehicles'}"></ng-template>
+        </div>
+      </div>
+      <div class="col-lg-8 col-md-8 col-sm-8 col-8">
+        <div class="card py-0" style="border:none; box-shadow: 0px 6px 7px 0px rgba(0, 0, 0, 0.06);height: 98%">
+          <div class="card-body">
+            <div class="data-heading">
+              <h5 style="font-size: 18px; font-weight: 700;">Detailed Information</h5>
+              <div class="row" style="margin-top: 5%;">
+                <div class="col-lg-4 col-md-4 col-sm-4 col-4" style="border-right: 1px solid rgb(227, 227, 227);">
+                  <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(227, 227, 227);">
+                    <h5 class="sub-heading" style="font-size: 18px; font-weight: 500;">General Vehicle</h5>
+                  </div>
+                  <div>
+                    <ng-template
+                      *ngTemplateOutlet="vehicleSubtypeRef; context: {$implicit: staticPsgrType, subtypeLabel: 'PSGR', color: '#F8F8F8'}"></ng-template>
+
+                    <ng-template
+                      *ngTemplateOutlet="vehicleSubtypeRef; context: {$implicit: staticTruckType, subtypeLabel: 'TRUCK', color: '#ffffff'}"></ng-template>
+
+                    <ng-template
+                      *ngTemplateOutlet="vehicleSubtypeRef; context: {$implicit: staticEVType, subtypeLabel: 'EV', color: '#F8F8F8'}"></ng-template>
+                  </div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-4" style="border-right: 1px solid rgb(227, 227, 227);">
+                  <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(227, 227, 227);">
+                    <h5 class="sub-heading" style="font-size: 18px; font-weight: 500;">Pedestrian</h5>
+                  </div>
+                  <div id="pedestrianChart"></div>
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-4">
+                  <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(227, 227, 227);">
+                    <h5 class="sub-heading" style="font-size: 18px; font-weight: 500;">Emergency</h5>
+                  </div>
+                  <div>
+                    <div *ngIf="staticDataCount.emergency != 0"
+                      style="margin-top: 10px;height: 200px;overflow: auto;overflow-x: hidden;">
+                      <div *ngFor="let location of staticAllData | keyvalue;trackBy:trackByDetails; let i=index">
+                        <div *ngIf="location.value.type == 'EVA'" class="eva-card row">
+                          <div class="col-sm-6 col-md-6 col-lg-6 col-xl-6">
+                            <img alt="ic_info_black" src="../assets/eva-card.svg">
+                            {{location.value.id}}
+                          </div>
+                          <div class="col-sm-6 col-md-6 col-lg-6 col-xl-6" title="{{location.value.location}}">
+                            {{location.value.location ? location.value.location: 'Bot/Emulator'}}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="row" *ngIf="staticDataCount.emergency == 0"
+                      style="margin-top: 10px;height: 200px;overflow: auto;overflow-x: hidden;">
+                      <div class="col-6 noRecord d-flex" style="align-items: center;font-size: 30px;opacity: 0.5;">
+                        <p>No data available</p>
+                      </div>
+                      <div class="col-6">
+                        <img alt="Frame_emergency" style="height:100%; width: 100%;"
+                          src="../assets/Frame_emergency.svg">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="rightPanelDataObj.isProccessedDataEnabled">
+  <app-processed-dashboard-data (setProccessedVal)="changeProccessedVal($event)"></app-processed-dashboard-data>
+</div>
+
+<nav class="navbar fixed-bottom navbar-dark bg-dark footer" style="height: 35px;">
+  <div class="col-sm-6 col-12">
+    <a class="navbar-brand"><span><img alt="verizon-logo-white" style="margin-top: -4px;"
+          src="../assets/verizon-logo-white.svg">&nbsp;
+        &copy; 2022
+        Verizon | All Rights Reserved</span></a>
+  </div>
+  <div class="col-sm-6 col-12 text-align">
+    <span>
+      <a class="navbar-brand">Version 1.0.15</a>
+    </span>
+  </div>
+</nav>
+
+
+<div class="overlay" *ngIf="this.webSocketAPI.loading">
+  <div class="center">
+    <mat-progress-spinner diameter=50 style="margin:0 auto;" value="50" mode="indeterminate">
+    </mat-progress-spinner>
+  </div>
+</div>
+
+<ng-template #locationRef let-location>
+  <div class="modal-body">
+    <form class="form-inline" [formGroup]="carDetailForm" style="text-align: center;">
+      <div class="row" style="align-items: center;">
+        <div class="col-lg-7 col-7">
+          <div class="vehicleLabel row">
+            <div class="col-lg-4">Latitude</div>
+            <div class="col-lg-2"><img alt="compass_0" src="../assets/vehicle_arrow.svg"></div>
+            <div style="color: #8D8D8D;" class="col-lg-6">
+              {{this.carDetailForm.controls['latitude_car'].value}}</div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-2">
+          <div class="direcition-label">
+            <div><img alt="compass_0" src="../assets/speedometer.svg"></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-3">
+          <div class="form-group">
+            <label for="mqtt">Speed</label>
+            <div>{{this.carDetailForm.controls['speed_car'].value}}
+              {{this.carDetailForm.controls['unit'].value}}</div>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="align-items: center;">
+        <div class="col-lg-7 col-7">
+          <div class="vehicleLabel row">
+            <div class="col-lg-4">Longitude</div>
+            <div class="col-lg-2"><img alt="compass_0" src="../assets/vehicle_arrow.svg"></div>
+            <div style="color: #8D8D8D;" class="col-lg-6">
+              {{this.carDetailForm.controls['longitude_car'].value}}</div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-2">
+          <div class="direcition-label">
+            <div><img alt="compass_0" src="../assets/direction.svg" style="height: 25px;"
+                [style.transform]="'rotate(' + (this.carDetailForm.controls['head_by'].value ? this.carDetailForm.controls['head_by'].value : 0) + 'deg)'">
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-3">
+          <div class="form-group">
+            <label for="mqtt">Direction</label>
+            <div>{{this.carDetailForm.controls['direction'].value}}</div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+<ng-template #detailCardRef let-staticData let-staticLabel="label">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-12 pb-2">
+    <div class="card py-0" style="border:none; box-shadow: 0px 6px 7px 0px rgba(0, 0, 0, 0.06);">
+      <div class="card-body">
+        <div class="row">
+          <div class="col-lg-4 col-md-4 col-sm-4 col-4 d-flex">
+            <img alt="general" src="../../assets/general.svg">
+          </div>
+          <div class="col-lg-8 col-md-8 col-sm-8 col-8 d-flex justify-content-end align-items-end"
+            style="flex-direction: column;">
+            <h4>{{staticData}}</h4>
+            <p>{{staticLabel}}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-template>
+
+<ng-template #vehicleCardRef let-listVal let-cardLabel="cardLabel" let-url="url">
+  <div class="col-lg-4" style="text-align: right"><img alt="ic_search1" [src]="url" style="height: 57px;width: 57px;">
+  </div>
+  <div class="col-lg-8">{{cardLabel}}
+    <span *ngIf="listVal != -1" style="float: right;margin-right: 15px;"><img alt="ic_search1"
+        src="../../assets/Close-icon.png" style="height: 20px"></span>
+  </div>
+</ng-template>
+
+<ng-template #vehicleSubtypeRef let-subtype let-subtypeLabel="subtypeLabel" let-color="color">
+  <div class="row bsm-card" [style.background-color]="color">
+    <div class="col-lg-10 col-10">
+      <div class="heading">
+        {{subtypeLabel}}
+      </div>
+    </div>
+    <div class="col-lg-2 col-2">
+      <div class="count-val1">{{subtype}}</div>
+    </div>
+  </div>
+</ng-template>

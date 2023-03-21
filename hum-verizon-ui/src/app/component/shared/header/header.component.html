@@ -1,0 +1,139 @@
+<nav class="navbar navbar-expand-lg navbar-light nav-menu nv-main text-white row px-3">
+    <div class="row" *ngIf="isPanelOpen" style="align-items: center;height: 219px;">
+        <div class="col-lg-4 d-flex justify-content-center verizon-logo">
+            <img alt="logo" src="../assets/verizon-logo.svg">
+        </div>
+        <div class="col-lg-4" *ngIf="!connectingTime">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div>
+                        <mat-form-field appearance="outline"
+                            [ngClass]="!isUrlValid? 'mat-form-field-appearance-outline mat-form-field-invalid mat-form-field-invalid mat-form-field-outline-thick':'mat-form-field-appearance-outline mat-form-field-outline'">
+                            <mat-label>URL</mat-label>
+                            <input matInput placeholder="tcp://mqtt.vzmode-br.dltdemo.io:1883" [(ngModel)]="url"
+                                name="url" (keyup)='validateURL()' required [disabled]="isClientSet"
+                                (paste)="onPaste('url')">
+                        </mat-form-field>
+                    </div>
+                    <div>
+                        <mat-form-field appearance="outline">
+                            <mat-label>UserName</mat-label>
+                            <input matInput placeholder="UserName" [(ngModel)]="userName" name="myuserName"
+                                autocomplete="nope" (keyup)='isClientDisabled()' required [disabled]="isClientSet"
+                                (paste)="onPaste('userName')">
+                        </mat-form-field>
+                    </div>
+                    <div>
+                        <mat-form-field appearance="outline">
+                            <mat-label>Password</mat-label>
+                            <input matInput placeholder="Password" [(ngModel)]="password" name="mypwd"
+                                autocomplete="new-password" [type]="hide ? 'password' : 'text'"
+                                (keyup)='isClientDisabled()' required [disabled]="isClientSet"
+                                (paste)="onPaste('password')">
+                            <span *ngIf="hide && !isClientSet" (click)="hide = !hide" class="showEyeImg">
+                                <img alt="loginImg" src="../assets/eye_ic.svg">
+                            </span>
+                            <span *ngIf="!hide && !isClientSet" (click)="hide = !hide" class="hideEyeImg">
+                                <img alt="loginImg" src="../assets/eye_hide_ic.svg">
+                            </span>
+                        </mat-form-field>
+                    </div>
+                </div>
+                <div class="col-lg-4 d-flex justify-content-center right-arrow-rounded"
+                    *ngIf="isBtnDisable && !this.isClientSet">
+                    <div class="d-flex justify-content-center right-arrow">
+                        <img alt="loginImg" src="../assets/right_arrow.svg">
+                    </div>
+                </div>
+                <div class="col-lg-4 d-flex justify-content-center right-arrow-rounded" (click)="connectMqttServer()"
+                    *ngIf="!isClientSet && !isBtnDisable && checkFormFields()" style="flex-direction: column;">
+                    <div class="d-flex justify-content-center forward-arrow">
+                        <img alt="loginImg" src="../assets/forward-arrow.svg">
+                    </div>
+                    <div style="color: black;font-weight: 400;font-size: 12px;line-height: 15px;">Connect</div>
+                </div>
+                <div class="col-lg-4 d-flex justify-content-center right-arrow-rounded" (click)="disconnectSession()"
+                    *ngIf="isClientSet" style="flex-direction: column;">
+                    <div class="d-flex justify-content-center forward-arrow">
+                        <img alt="loginImg" src="../assets/disconnect_icon.svg">
+                    </div>
+                    <div style="color: black;font-weight: 400;font-size: 12px;line-height: 15px;">Disconnect</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4 disconnect" *ngIf="connectingTime">
+            <div class="row">
+                <div class="col-lg-2 d-flex" style="align-items: center;"><img alt="loginImg"
+                        src="../assets/disconnect_icon.svg"></div>
+                <div class="col-lg-9 d-flex" style="align-items: center;">Connecting to mqtt Server</div>
+                <div class="col-lg-1 d-flex" style="align-items: center;"><img alt="loginImg"
+                        src="../assets/forward-arrow.svg"></div>
+            </div>
+        </div>
+
+
+        <div class="col-lg-3 d-flex justify-content-center topic-conf" *ngIf="isClientSet && !connectingTime">
+            <div>
+                <div>
+                    <mat-form-field appearance="fill">
+                        <mat-label>Root Topic</mat-label>
+                        <mat-select [(ngModel)]="clientType" (selectionChange)="onChangeClient($event.value)">
+                            <mat-option value="all">
+                                Regional
+                            </mat-option>
+                            <mat-option value="individual">
+                                Individual
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                </div>
+                <div>
+                    <mat-form-field appearance="outline">
+                        <mat-label>TopicName</mat-label>
+                        <input matInput placeholder="TopicName" name="topicName" required [(ngModel)]="topicName">
+                    </mat-form-field>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-1 d-flex justify-content-center right-arrow-rounded"
+            *ngIf="isClientSet && topicName && !topicName.trim() && !connectingTime">
+            <div class="d-flex justify-content-center right-arrow">
+                <img alt="loginImg" src="../assets/right_arrow.svg">
+            </div>
+        </div>
+        <div class="col-lg-1 d-flex justify-content-center right-arrow-rounded"
+            *ngIf="isClientSet && topicName && topicName.trim() && !connectingTime" style="flex-direction: column;">
+            <div class="d-flex justify-content-center forward-arrow" (click)="getMQTTData()">
+                <img alt="loginImg" src="../assets/forward-arrow.svg">
+            </div>
+            <div style="color: black;font-weight: 400;font-size: 12px;line-height: 15px;">Apply</div>
+        </div>
+    </div>
+    <div [ngClass]="isPanelOpen? 'down-arrow' : 'up-arrow'" (click)="isPanelOpen = !isPanelOpen"
+        style="flex-direction: column;">
+        <img [ngClass]="isPanelOpen ? 'openArrow' : ''" alt="loginImg" src="../assets/down-arrow.svg"><span
+            style="color: black;font-size: 8px;">Connect</span>
+    </div>
+    <div class="row user-header" [style.background]="!headerOpacity? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,1)'">
+        <div class="col-lg-3 justify-content-center d-flex" style="align-items: center;">
+            <img alt="map_roadmap" src="../assets/v-logo.svg">
+            <img alt="text-logo" src="../assets/text-logo.svg">
+        </div>
+        <div class="col-lg-1 justify-content-end d-flex" style="text-align: right; align-items: center;">
+            <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Example icon-button with a menu"
+                style="border-radius: 50%">
+                <img alt="loginImg" src="../assets/logout_icon.svg">
+            </button>
+            <mat-menu #menu="matMenu">
+                <button mat-menu-item>
+                    Settings
+                </button>
+                <hr style="margin: 0px;">
+                <button mat-menu-item (click)="logout()">
+                    Logout
+                </button>
+            </mat-menu>
+        </div>
+    </div>
+</nav>

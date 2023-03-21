@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  selector:
+    matchLabels:
+      app: backend
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: tarankapoor/vrsu-backend:latest
+        imagePullPolicy: Always
+        resources: {}
+        ports:
+        - name: backend
+          containerPort: 8080
+          protocol: TCP
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  labels:
+    run: backend
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    nodePort: 31792
+  type: NodePort
+  selector:
+    app: backend

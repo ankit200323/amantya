@@ -1,0 +1,158 @@
+pipeline {
+    
+    agent any
+    
+    stages {
+        
+        stage('Source Code From Github') {
+            steps {
+                script {
+                    git branch: 'release1.15', credentialsId: "kata2002" , url: "https://github.com/mohanvimin/AMT-VZDO-FCP.git"
+                }
+                 
+            }
+        }
+        
+        stage("Build Docker File"){
+            steps {
+                script {
+                    dir('vrsu-middleware/vrsu-subscriber-manager') {
+                    sh '''
+                        sudo docker build -t vrsu-backend:v1.$BUILD_ID .
+                        sudo docker image tag vrsu-backend:v1.$BUILD_ID  tarankapoor/vrsu-backend:V1.$BUILD_ID
+                        sudo docker image tag vrsu-backend:v1.$BUILD_ID  tarankapoor/vrsu-backend:latest
+                    ''' 
+                    }
+                }
+            }
+        }
+        
+        stage("Push Docker Image Of Backend To DockerHub"){
+            steps {
+                script {
+                    sh '''    
+                        sudo docker login -u tarankapoor -p Taran@123
+                        sudo docker image push tarankapoor/vrsu-backend:V1.$BUILD_ID
+                        sudo docker image push tarankapoor/vrsu-backend:latest
+                        sudo docker image rmi vrsu-backend:v1.$BUILD_ID tarankapoor/vrsu-backend:V1.$BUILD_ID tarankapoor/vrsu-backend:latest
+                    '''
+                    }
+                }  
+            }
+            
+            stage("Helm Chart For Backend"){
+            steps {
+                script {
+                    dir('vrsu-helmchart') {
+                    sh '''
+                        helm uninstall vrsubackend
+                        helm install vrsubackend vrsubackend
+                    ''' 
+                    }
+                }
+            }
+        }
+  
+        
+        stage("Maven Clean Install"){
+            steps{
+                dir ("vrsu-middleware/vrsu-subscriber-manager"){
+                    sh "mvn clean install -DskipTests"
+                }
+            }
+        }
+        
+    
+        stage("SonarQube Analysis For Backend") {
+            steps {
+            dir ("vrsu-middleware/vrsu-subscriber-manager"){
+              sh""" mvn sonar:sonar -Dsonar.projectKey=vrsu -Dsonar.host.url=http://10.10.110.55:9000 -Dsonar.login=9f36cb133218348e3f82bcf6a42569ccaef179d5 -Dsonar.exclusions=**/j2735/** """
+            }
+          }
+        }
+        
+        stage("Backend Junit Test"){
+            steps{
+                dir("vrsu-middleware/vrsu-subscriber-manager"){
+                    sh "mvn test"
+                }
+            }
+        }
+            stage('Test & Jacoco Static Analysis') {
+            steps {
+                script {
+                    jacoco exclusionPattern: '**/j2735/**,**/mqttdatamodel/**,**/mqtt/CorsFilter.class,**/utility/Constants.class'
+            }
+        }
+    }
+
+    stage("Build Frontend Docker File"){
+            steps {
+                script {
+                    dir('hum-verizon-ui') {
+                    sh '''
+                        sudo docker build -t frontendverizon:v1.$BUILD_ID .
+                        sudo docker image tag frontendverizon:v1.$BUILD_ID  tarankapoor/frontendverizon:V1.$BUILD_ID
+                        sudo docker image tag frontendverizon:v1.$BUILD_ID  tarankapoor/frontendverizon:latest
+                    ''' 
+                    }
+                }
+            }
+        }
+        
+        stage("Push Docker Image Of Frontend To DockerHub"){
+            steps {
+                script {
+                    sh '''    
+                        sudo docker login -u tarankapoor -p Taran@123
+                        sudo docker image push tarankapoor/frontendverizon:V1.$BUILD_ID
+                        sudo docker image push tarankapoor/frontendverizon:latest
+                        sudo docker image rmi frontendverizon:v1.$BUILD_ID tarankapoor/frontendverizon:V1.$BUILD_ID tarankapoor/frontendverizon:latest
+                    '''
+                    }
+                }  
+            }
+            
+            stage("Helm Chart For Frontend"){
+            steps {
+                script {
+                    dir('vrsu-helmchart') {
+                    sh '''
+                        helm uninstall vrsufrontend
+                        helm install vrsufrontend vrsufrontend
+                    ''' 
+                    }
+                }
+            }
+        }
+        
+        stage("Npm Install"){
+            steps{
+                dir ("hum-verizon-ui/src"){
+                    sh "npm install -f"
+                    sh "npm run test --code-coverage"
+                    sh "npm run build"
+                }
+            }
+        }
+    
+    stage("Report"){
+            steps{
+                dir ("hum-verizon-ui/coverage"){
+                     publishHTML([allowMissing: false, alwaysLinkToLastBuild: true, keepAll: true, reportDir: 'hum-verizon-ui', reportFiles: 'index.html', reportName: 'HTML Report', reportTitles: 'code-coverage', useWrapperFileDirectly: true])
+                }
+            }
+        }
+        
+         stage("SonarQube analysis For Frontend"){
+            steps{
+                script{
+                withSonarQubeEnv('sonarcicd') {
+                    sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=angular -Dsonar.sources=. -Dsonar.host.url=http://10.10.110.55:9000 -Dsonar.login=c6df641fc55390303b4c3b221b907862d7af62a5 -Dsonar.exclusions=**/hum-verizon-ui/coverage/**,**/*.java"
+                    }   
+                }   
+            }
+        }
+        
+    }
+}

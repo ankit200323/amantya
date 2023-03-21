@@ -1,0 +1,124 @@
+pipeline {
+    
+    agent any
+    
+    stages {
+        
+        stage('Source Code From Github') {
+            steps {
+                script {
+                    git branch: '${BRANCH_NAME}', credentialsId: "4c6c9782-144e-46ee-bbc9-8e0741b3da74" , url: "https://github.com/5GRealityLab/do_dashboard_ui.git"
+                }
+                 
+            }
+        }
+
+        stage("Build Docker File"){
+            steps {
+                script {
+                    dir('vrsu-subscriber-manager') {
+                    sh '''
+                        sudo docker build -t vrsu-backend:v1.$BUILD_ID .
+                        sudo docker image tag vrsu-backend:v1.$BUILD_ID  tarankapoor/vrsu-backend:V1.$BUILD_ID
+                        sudo docker image tag vrsu-backend:v1.$BUILD_ID  tarankapoor/vrsu-backend:latest
+                    ''' 
+                    }
+                }
+            }
+        }
+        
+        stage("Build Frontend Docker File"){
+            steps {
+                script {
+                    dir('hum-verizon-ui') {
+                    sh '''
+                        sudo docker build -t frontendverizon:v1.$BUILD_ID .
+                        sudo docker image tag frontendverizon:v1.$BUILD_ID  tarankapoor/frontendverizon:V1.$BUILD_ID
+                        sudo docker image tag frontendverizon:v1.$BUILD_ID  tarankapoor/frontendverizon:latest
+                    ''' 
+                    }
+                }
+            }
+        }
+        
+        stage("Push Docker Image Of Backend To DockerHub"){
+            steps {
+                script {
+                    sh '''    
+                        sudo docker login -u tarankapoor -p Taran@123
+                        sudo docker image push tarankapoor/vrsu-backend:V1.$BUILD_ID
+                        sudo docker image push tarankapoor/vrsu-backend:latest
+                        sudo docker image rmi vrsu-backend:v1.$BUILD_ID tarankapoor/vrsu-backend:V1.$BUILD_ID tarankapoor/vrsu-backend:latest
+                    '''
+                    }
+                }  
+            }
+        
+        stage("Push Docker Image Of Frontend To DockerHub"){
+            steps {
+                script {
+                    sh '''    
+                        sudo docker login -u tarankapoor -p Taran@123
+                        sudo docker image push tarankapoor/frontendverizon:V1.$BUILD_ID
+                        sudo docker image push tarankapoor/frontendverizon:latest
+                        sudo docker image rmi frontendverizon:v1.$BUILD_ID tarankapoor/frontendverizon:V1.$BUILD_ID tarankapoor/frontendverizon:latest
+                    '''
+                    }
+                }  
+            }
+            
+        stage("Helm Chart"){
+            steps {
+                script {
+                    dir('vrsu-helmchart') {
+                    sh '''
+                        helm uninstall vrsubackend vrsufrontend
+                        helm install vrsubackend vrsubackend
+                        helm install vrsufrontend vrsufrontend
+                    ''' 
+                    }
+                }
+            }
+        }
+        stage("Maven Clean Install"){
+            steps{
+                dir ("vrsu-subscriber-manager"){
+                    sh "mvn clean install"
+                }
+            }
+        }
+        
+        stage("SonarQube Analysis") {
+            steps {
+            dir ("vrsu-subscriber-manager"){
+              sh""" mvn sonar:sonar -Dsonar.projectKey=vrsu -Dsonar.host.url=http://10.10.110.55:9000 -Dsonar.login=9f36cb133218348e3f82bcf6a42569ccaef179d5 """
+            }
+          }
+        }
+        
+        stage("Npm Install"){
+            steps{
+                dir ("hum-verizon-ui/src"){
+                    sh "npm install -f"
+                    sh  "npm run build"
+                }
+            }
+        }
+        
+         stage("SonarQube analysis"){
+            steps{
+                script{
+                withSonarQubeEnv('sonarcicd') {
+                    sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=angular -Dsonar.sources=. -Dsonar.host.url=http://10.10.110.55:9000 -Dsonar.login=c6df641fc55390303b4c3b221b907862d7af62a5"
+                 }   
+                }   
+            }
+        }
+    }
+        
+        post {
+         always {
+            cleanWs deleteDirs: true, notFailBuild: true
+                }
+            }
+}

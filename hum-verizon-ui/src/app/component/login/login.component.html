@@ -1,0 +1,46 @@
+<div class="row container">
+    <div class="col-lg-7">
+        <div class="row justify-content-center">
+            <img alt="loginImg" src="../assets/login_img.svg" style="height: 280px; width: 425px">
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="row justify-content-center">
+            <img alt="logo" src="../assets/verizon-logo.svg" style="width: 240px;height: 81px;margin-right: 40%;">
+            <form>
+                <div class="row justify-content-center">
+                    <div class="form-group">
+                        <mat-form-field appearance="outline" style="width: 70%;">
+                            <mat-label>Username</mat-label>
+                            <input autocomplete="nope" matInput placeholder="Username" [(ngModel)]="userName"
+                                name="myusername" (keyup.enter)="submit()">
+                        </mat-form-field>
+                    </div>
+                    <div class="form-group">
+                        <mat-form-field appearance="outline" style="width: 70%;">
+                            <mat-label>Password</mat-label>
+                            <input matInput placeholder="Password" [(ngModel)]="password" name="mypwd"
+                                [type]="hide ? 'password' : 'text'" autocomplete="new-password"
+                                (keyup.enter)="submit()">
+                            <span *ngIf="hide" (click)="hide = !hide" class="eyeImg">
+                                <img alt="loginImg" src="../assets/eye_ic.svg">
+                            </span>
+                            <span *ngIf="!hide" (click)="hide = !hide" class="eyeImg">
+                                <img alt="loginImg" src="../assets/eye_hide_ic.svg">
+                            </span>
+                        </mat-form-field>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input type="button" class="btnSubmit" value="Login" (click)="submit()" style="width: 135px;" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div class="overlay" *ngIf="isLogin">
+    <div class="center">
+        <mat-progress-spinner diameter=50 style="margin:0 auto;" value="50" mode="indeterminate">
+        </mat-progress-spinner>
+    </div>
+</div>

@@ -1,0 +1,174 @@
+<div style="margin-top:5%;">
+    <div class="lower-header" style="position: relative;">
+        <div class="map-view-icon d-flex justify-content-end py-1 px-2"
+            style="position: absolute; right: 0;
+      border-top-left-radius: 15px; border-bottom-left-radius: 15px; padding-left: 10px; box-shadow: 0px 8px 4px 0px rgba(0, 0, 0, 0.32);cursor: pointer;"
+            (click)="disableProccessedView()">
+            <img alt="mapview" src="../assets/map-view-icon.svg">
+            <span class="px-2 view-map" style="font-size: 12px; font-weight: 400;">Map View</span>
+        </div>
+        <div class="d-flex px-5 mx-3 mt-4">
+            <h5 style="font-size: 18px; font-weight: 500;">DataVault</h5>
+        </div>
+    </div>
+    <div class="main-box px-5" style="background-color: #ccc;height: 100vh;">
+        <div class="row pt-4">
+            <div class="col-lg-3 col-md-3 col-sm-3 col-3">
+                <div class="row" style="height: 100%;">
+
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-12 pb-2">
+                        <div class="card py-0" style="border:none; box-shadow: 0px 6px 7px 0px rgba(0, 0, 0, 0.06);">
+                            <div class="card-body dateCard">
+                                <div class="row">
+                                    <div class="col-lg-12 col-md-12 col-sm-12">
+                                        <h6>Select date range</h6>
+
+                                        <div class="field col-12 md:col-4">
+                                            <p-calendar [(ngModel)]="startDate" [showIcon]="true" [showTime]="true"
+                                                [showSeconds]="true" inputId="time" placeholder="Start date"
+                                                [maxDate]="endDate || currentDate"></p-calendar>
+                                        </div>
+
+                                        <div class="field col-12 md:col-4 mt20">
+                                            <p-calendar [minDate]="startDate" [maxDate]="currentDate"
+                                                [(ngModel)]="endDate" [showIcon]="true" [showTime]="true"
+                                                [showSeconds]="true" inputId="time" placeholder="End date"></p-calendar>
+                                        </div>
+
+                                    </div>
+
+                                    <div style="margin-top: 20px;">
+                                        <button mat-raised-button color="primary"
+                                            (click)="getDataFromDababase(0, 10, true)"
+                                            [disabled]="!startDate || !endDate">Get Data</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="col-lg-9 col-md-9 col-sm-9 col-9">
+                <div class="row">
+                    <div class="example-container mat-elevation-z8">
+                        <div class="example-table-container">
+
+                            <table style="width: 100%;min-height: 100px;" mat-table [dataSource]="dataSource"
+                                class="example-table" aria-describedby="myTable">
+                                <ng-container matColumnDef="publisherId">
+                                    <th mat-header-cell *matHeaderCellDef id="pubId">Publisher Id
+                                    </th>
+                                    <td mat-cell *matCellDef="let row">{{getPublisherId(row.publisherId)}}</td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="speed">
+                                    <th mat-header-cell *matHeaderCellDef style="width: 5%;" id="speed">Speed</th>
+                                    <td mat-cell *matCellDef="let row">{{row.speed? row.speed : 'NA'}}</td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="latitude">
+                                    <th mat-header-cell *matHeaderCellDef style="width: 8%;" id="lat">Latitude</th>
+                                    <td mat-cell *matCellDef="let row">{{row.latitude ? row.latitude : 'NA'}}</td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="longitude">
+                                    <th mat-header-cell *matHeaderCellDef style="width: 8%;" id="long">Longitude</th>
+                                    <td mat-cell *matCellDef="let row">{{row.longitude ? row.longitude : 'NA'}}</td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="messageType">
+                                    <th mat-header-cell *matHeaderCellDef style="width: 14%;" id="msgType">Message Type
+                                        <em style="cursor: pointer;" class="pi pi-filter"
+                                            (click)="isMsgTypeModalOpen = !isMsgTypeModalOpen; isTopicModalOpen = false"></em>
+                                    </th>
+                                    <td mat-cell *matCellDef="let row">{{row.messageType ? row.messageType : 'NA'}}</td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="timestamp">
+                                    <th mat-header-cell *matHeaderCellDef style="width: 10%;" id="timeStamp">Time Stamp
+                                    </th>
+                                    <td mat-cell *matCellDef="let row">{{row.timestamp | date:'YYYY-MM-dd,
+                                        HH:mm:ss.SS'}}</td>
+                                </ng-container>
+
+                                <ng-container matColumnDef="topic">
+                                    <th mat-header-cell *matHeaderCellDef style="width: 45%;" id="topic">Topic
+                                        <em style="cursor: pointer;" class="pi pi-filter"
+                                            (click)="isTopicModalOpen = !isTopicModalOpen; isMsgTypeModalOpen = false"></em>
+                                    </th>
+                                    <td mat-cell *matCellDef="let row" style="text-align: left;">{{row.topic}}</td>
+                                </ng-container>
+
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"
+                                    style="background-color: #f8f9fa;"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                            </table>
+                            <div class="d-flex justify-content-center" *ngIf="dataSource.data.length == 0"
+                                style="color: grey;">No records found</div>
+                        </div>
+                        <mat-paginator #paginator [length]="dataLength" [pageSize]="10" [pageIndex]="pageIndex"
+                            (page)="getServerData($event)" aria-label="Select page"
+                            showFirstLastButtons></mat-paginator>
+                    </div>
+
+                </div>
+
+            </div>
+            <div *ngIf="isMsgTypeModalOpen" class="msgTypeModal filterModal">
+                <div style="text-align: right;cursor: pointer;" (click)="isMsgTypeModalOpen = !isMsgTypeModalOpen">x
+                </div>
+                <div class="p20">
+                    <div class="row">
+                        <div class="col-6"><p-radioButton name="BSM" value="BSM" label="BSM"
+                                [(ngModel)]="msgTypeFilter"></p-radioButton></div>
+                        <div class="col-6"><p-radioButton name="SPAYT" value="SPAT" label="SPAT"
+                                [(ngModel)]="msgTypeFilter"></p-radioButton></div>
+                    </div>
+                    <div class="row  mt10">
+                        <div class="col-6"><p-radioButton name="PSM" value="PSM" label="PSM"
+                                [(ngModel)]="msgTypeFilter"></p-radioButton></div>
+                        <div class="col-6"><p-radioButton name="MAP" value="MAP" label="MAP"
+                                [(ngModel)]="msgTypeFilter"></p-radioButton></div>
+                    </div>
+                    <div class="row mt10"><p-radioButton name="EVA" value="EVA" label="EVA"
+                            [(ngModel)]="msgTypeFilter"></p-radioButton></div>
+                    <div class="row mt10">
+                        <div class="col-6"><button mat-raised-button color="primary"
+                                (click)="msgTypeFilter = ''">Reset</button></div>
+                        <div class="col-6">
+                            <button style="float: right;" mat-raised-button color="primary"
+                                (click)="getDataFromDababase(0, 10, true)">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div *ngIf="isTopicModalOpen" class="topicModal filterModal">
+                <div style="text-align: right;cursor: pointer;" (click)="isTopicModalOpen = !isTopicModalOpen">x</div>
+                <div class="p20">
+                    <div class="row mt10">
+                        <span class="p-float-label">
+                            <input id="float-input" type="text" pInputText [(ngModel)]="topicFilterText"
+                                style="width: 100%;">
+                            <label for="float-input" style="left: 1.75rem;">Contains</label>
+                        </span>
+                    </div>
+                    <div class="row mt10">
+                        <div style="text-align: right;">
+                            <button mat-raised-button color="primary"
+                                (click)="getDataFromDababase(0, 10, true)">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" *ngIf="this.websocketService.loading">
+    <div class="center">
+        <mat-progress-spinner diameter=50 style="margin:0 auto;" value="50" mode="indeterminate">
+        </mat-progress-spinner>
+    </div>
+</div>
